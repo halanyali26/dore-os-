@@ -47,6 +47,7 @@ class LLMRouter:
     def __init__(self):
         self._hermes = None
         self._claude = None
+        self._deepseek = None
 
     @property
     def hermes(self):
@@ -63,14 +64,31 @@ class LLMRouter:
         return self._hermes
 
     @property
-    def claude(self):
-        if self._claude is None:
-            from langchain_anthropic import ChatAnthropic
-            self._claude = ChatAnthropic(
-                model=os.getenv("CLAUDE_MODEL", "claude-sonnet-4-20250514"),
+    def deepseek(self):
+        if self._deepseek is None:
+            from langchain_openai import ChatOpenAI
+            self._deepseek = ChatOpenAI(
+                base_url="https://api.deepseek.com/v1",
+                api_key=os.getenv("DEEPSEEK_API_KEY", ""),
+                model="deepseek-chat",
                 temperature=0.7,
                 max_tokens=4096,
             )
+        return self._deepseek
+
+    @property
+    def claude(self):
+        if self._claude is None:
+            ak = os.getenv("ANTHROPIC_API_KEY", "")
+            if ak:
+                from langchain_anthropic import ChatAnthropic
+                self._claude = ChatAnthropic(
+                    model=os.getenv("CLAUDE_MODEL", "claude-sonnet-4-20250514"),
+                    temperature=0.7,
+                    max_tokens=4096,
+                )
+            else:
+                self._claude = self.deepseek  # fallback
         return self._claude
 
     def route(self, task_type: Literal["creative", "routine", "complex"]) -> Any:

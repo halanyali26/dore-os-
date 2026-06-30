@@ -1,0 +1,62 @@
+{
+  "platform": "spotify",
+  "total_artists": 9,
+  "artists": [
+    {
+      "name": "Valhaven",
+      "streams_28d": 0,
+      "latest_release": "Ragnarök Skal Ekki Deyja",
+      "release_date": "2026-06-11"
+    },
+    {
+      "name": "Hakan ALANYALI",
+      "streams_28d": 2,
+      "latest_release": "Bozkır",
+      "release_date": "2026-06-10"
+    },
+    {
+      "name": "Azultvkids",
+      "streams_28d": 1,
+      "latest_release": "Toddler Routine Champions, Vol. 2",
+      "release_date": "2026-05-06"
+    },
+    {
+      "name": "Baglamacı Lab",
+      "streams_28d": 0,
+      "latest_release": "",
+      "release_date": ""
+    },
+    {
+      "name": "Dark Ambient Abyss",
+      "streams_28d": 0,
+      "latest_release": "",
+      "release_date": ""
+    },
+    {
+      "name": "Grimsteppe Lore",
+      "streams_28d": 0,
+      "latest_release": "",
+      "release_date": ""
+    },
+    {
+      "name": "Silk Nomad Lofi",
+      "streams_28d": 0,
+      "latest_release": "",
+      "release_date": ""
+    },
+    {
+      "name": "Slavıc Noir",
+      "streams_28d": 0,
+      "latest_release": "",
+      "release_date": ""
+    },
+    {
+      "name": "THE KH4N",
+      "streams_28d": 0,
+      "latest_release": "",
+      "release_date": ""
+    }
+  ],
+  "fetched_at": "2026-06-30T11:57:52.340444+00:00",
+  "source": "https://artists.spotify.com/c/roster"
+}

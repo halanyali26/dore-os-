@@ -1,0 +1,465 @@
+{
+  "metadata": {
+    "artist": "Hakan ALANYALI",
+    "artist_id": "dore-artist-hakan-alanyali",
+    "email": "halanyali@gmail.com",
+    "generated_at": "2026-06-30T00:00:00Z",
+    "source": "Dore OS — vault/analytics/platform_data.json",
+    "note": "ISRC kodları DistroKid'den manuel çekilmelidir. DistroKid girişi Google güvenlik engeli nedeniyle otomatik yapılamadı. ISRC formatı: TR-DRS-YY-NNNNN"
+  },
+  "spotify": {
+    "artist_id": "2FmQua42e6y7jcNuBT1Wxb",
+    "artist_url": "https://open.spotify.com/artist/2FmQua42e6y7jcNuBT1Wxb",
+    "monthly_listeners": 2,
+    "bio": "Melodic house & deep house producer from İstanbul, blending soulful Anatolian melodies with modern electronic grooves.",
+    "albums": [
+      {
+        "title": "Bozkır",
+        "type": "album",
+        "release_date": "2026-06-11",
+        "total_tracks": 12,
+        "duration": "43:10",
+        "label": "Dore Studio Global",
+        "copyright": "© Dore Studio Global 2026 ℗ Dore Studio Global 2026",
+        "spotify_id": "3s4mpRWbjPbK6TASmfMYn0",
+        "spotify_url": "https://open.spotify.com/album/3s4mpRWbjPbK6TASmfMYn0",
+        "tracks": [
+          {
+            "track_number": 1,
+            "title": "Bozkır",
+            "duration": "4:04",
+            "spotify_id": "4QNbioTns2sUBQQyWaTg03",
+            "isrc": null
+          },
+          {
+            "track_number": 2,
+            "title": "Zalım",
+            "duration": "3:30",
+            "spotify_id": "7z39NdRbwC9Lu8AX5rgUMM",
+            "isrc": null
+          },
+          {
+            "track_number": 3,
+            "title": "Gimme the dark",
+            "duration": "3:30",
+            "spotify_id": "0si69Mz1hHrGEbTftbUhaS",
+            "isrc": null
+          },
+          {
+            "track_number": 4,
+            "title": "Bi' baştan öbür başa",
+            "duration": "2:08",
+            "spotify_id": "12FSfAOQjLyRdGcsa067lG",
+            "isrc": null
+          },
+          {
+            "track_number": 5,
+            "title": "Born To Be Lost",
+            "duration": "4:30",
+            "spotify_id": "34aUwP8vRdlgFBFsMkY0cX",
+            "isrc": null
+          },
+          {
+            "track_number": 6,
+            "title": "Burdayız!",
+            "duration": "3:54",
+            "spotify_id": "7xyUxyqHm3fhKjvlfCuUlD",
+            "isrc": null
+          },
+          {
+            "track_number": 7,
+            "title": "İstanbul",
+            "duration": "4:00",
+            "spotify_id": "3x29JTXECIfjtWaiIQ0S10",
+            "isrc": null
+          },
+          {
+            "track_number": 8,
+            "title": "Dön Dönence",
+            "duration": "2:48",
+            "spotify_id": "5ROppML9Gyj3Py66ocZ1Jz",
+            "isrc": null
+          },
+          {
+            "track_number": 9,
+            "title": "Filtered Saz",
+            "duration": "3:30",
+            "spotify_id": "3rfAKFAyyl9wIqKDvSHtRn",
+            "isrc": null
+          },
+          {
+            "track_number": 10,
+            "title": "Night Fever Void",
+            "duration": "3:30",
+            "spotify_id": "0xOJ4VX5Xd0rQbY2wolWmB",
+            "isrc": null
+          },
+          {
+            "track_number": 11,
+            "title": "Yaba daba",
+            "duration": "3:30",
+            "spotify_id": "2LX3fIARasV7IF5JWyhWXE",
+            "isrc": null
+          },
+          {
+            "track_number": 12,
+            "title": "Spaghetti",
+            "duration": "4:14",
+            "spotify_id": "1Y1DwT4fKJs45YpCLCUPid",
+            "isrc": null
+          }
+        ]
+      },
+      {
+        "title": "Kış güneşi | Electronic House Music",
+        "type": "album",
+        "release_date": "2026-02-18",
+        "total_tracks": 14,
+        "duration": "54:50",
+        "label": "Dore Studio",
+        "copyright": "© 2026 Dore Studio ℗ 2026 Dore Studio",
+        "spotify_id": "2wNrihrLGsugZUDQkhSmRY",
+        "spotify_url": "https://open.spotify.com/album/2wNrihrLGsugZUDQkhSmRY",
+        "tracks": [
+          {
+            "track_number": 1,
+            "title": "Kış güneşi | Electronic House Music",
+            "duration": "4:58",
+            "spotify_id": "1qZh3Cx3gFyIqOW5Onil7D",
+            "isrc": null
+          },
+          {
+            "track_number": 2,
+            "title": "Burdayız | Electronic House Music",
+            "duration": "3:54",
+            "spotify_id": "3oBkyBlPBeeAGaghPEsNxx",
+            "isrc": null
+          },
+          {
+            "track_number": 3,
+            "title": "Dön Dönence | Electronic House Music",
+            "duration": "4:53",
+            "spotify_id": "20WqLDpTW9822DxhyFDHA4",
+            "isrc": null
+          },
+          {
+            "track_number": 4,
+            "title": "Tak mı yo rum | Electronic House Music",
+            "duration": "3:31",
+            "spotify_id": "3p2UKHF3yq9L4ET2XYLm9r",
+            "isrc": null
+          },
+          {
+            "track_number": 5,
+            "title": "Sabaha dek | Electronic House Music",
+            "duration": "4:29",
+            "spotify_id": "2Zk42mwjdbQnsSiPYkwn3S",
+            "isrc": null
+          },
+          {
+            "track_number": 6,
+            "title": "Açma Zülüflerin | Electronic House Music",
+            "duration": "3:16",
+            "spotify_id": "3p7N0SROALpzgvOy5FJ27Q",
+            "isrc": null
+          },
+          {
+            "track_number": 7,
+            "title": "Time is now | Electronic House Music",
+            "duration": "4:07",
+            "spotify_id": "01P5Z43Doh5kD3joWt3tvO",
+            "isrc": null
+          },
+          {
+            "track_number": 8,
+            "title": "Sil beni yalan dünya | Electronic House Music",
+            "duration": "2:26",
+            "spotify_id": "7qYAuPgBXVrSM09zc7In1M",
+            "isrc": null
+          },
+          {
+            "track_number": 9,
+            "title": "Ethnic woman | Electronic House Music",
+            "duration": "3:23",
+            "spotify_id": "5SsoT6is70GtDpBNlbTsyD",
+            "isrc": null
+          },
+          {
+            "track_number": 10,
+            "title": "Somebody say oh | Electronic House Music",
+            "duration": "2:59",
+            "spotify_id": "6M4fzUe7cIIB7F8puD3Zq9",
+            "isrc": null
+          },
+          {
+            "track_number": 11,
+            "title": "Zincirler | Electronic House Music",
+            "duration": "3:02",
+            "spotify_id": "0172pWj32LweX8zRvBEgJC",
+            "isrc": null
+          },
+          {
+            "track_number": 12,
+            "title": "Amaan | Electronic House Music",
+            "duration": "4:49",
+            "spotify_id": "1Krrl6OmMn8lsFZHObdcpb",
+            "isrc": null
+          },
+          {
+            "track_number": 13,
+            "title": "Bu sonsuz gecede | Electronic House Music",
+            "duration": "3:41",
+            "spotify_id": "3lH4c9qXvk41sKfQFgtMmK",
+            "isrc": null
+          },
+          {
+            "track_number": 14,
+            "title": "Make love to me | Electronic House Music",
+            "duration": "5:15",
+            "spotify_id": "3BRVsxWt45JZtx5VAN9hDL",
+            "isrc": null
+          }
+        ]
+      },
+      {
+        "title": "Make Love To Me",
+        "type": "single",
+        "release_date": "2026-01-15",
+        "total_tracks": 1,
+        "duration": "5:15",
+        "label": "Dore Studio",
+        "copyright": "© 2025 Dore Studio ℗ 2025 Dore Studio",
+        "spotify_id": "4DXnPS3VcYF35kpO7Kk6fY",
+        "spotify_url": "https://open.spotify.com/album/4DXnPS3VcYF35kpO7Kk6fY",
+        "tracks": [
+          {
+            "track_number": 1,
+            "title": "Make Love To Me",
+            "duration": "5:15",
+            "spotify_id": "55crxyCoBfFam94rESqxV0",
+            "isrc": null
+          }
+        ]
+      },
+      {
+        "title": "Haram",
+        "type": "single",
+        "release_date": "2026-01-21",
+        "total_tracks": 2,
+        "duration": "10:32",
+        "label": "Dore Studio",
+        "copyright": "© 2026 Dore Studio ℗ 2026 Dore Studio",
+        "spotify_id": "6Ne5N9vZoPwAqG3zfm5NFQ",
+        "spotify_url": "https://open.spotify.com/album/6Ne5N9vZoPwAqG3zfm5NFQ",
+        "tracks": [
+          {
+            "track_number": 1,
+            "title": "Haram",
+            "duration": "5:16",
+            "spotify_id": "7BxgRo2nVXeHY3jZuWipoQ",
+            "isrc": null
+          },
+          {
+            "track_number": 2,
+            "title": "Make Love To Me",
+            "duration": "5:15",
+            "spotify_id": "61eYuKrFjSFg0mF2ljCh64",
+            "isrc": null
+          }
+        ]
+      },
+      {
+        "title": "Bu sonsuz gece",
+        "type": "single",
+        "release_date": "2025-11-07",
+        "total_tracks": 1,
+        "duration": "3:41",
+        "label": "Dore Studio",
+        "copyright": "© 2025 Dore Studio ℗ 2025 Dore Studio",
+        "spotify_id": "3sLTqtkGYAFlXXttC8AvPr",
+        "spotify_url": "https://open.spotify.com/album/3sLTqtkGYAFlXXttC8AvPr",
+        "tracks": [
+          {
+            "track_number": 1,
+            "title": "Bu sonsuz gece",
+            "duration": "3:41",
+            "spotify_id": "3saYv4vPimK31zejfLu8s2",
+            "isrc": null
+          }
+        ]
+      }
+    ],
+    "popular_tracks": [
+      {
+        "rank": 1,
+        "title": "Tak mı yo rum | Electronic House Music",
+        "duration": "3:31",
+        "spotify_id": "3p2UKHF3yq9L4ET2XYLm9r"
+      },
+      {
+        "rank": 2,
+        "title": "Dön Dönence | Electronic House Music",
+        "duration": "4:53",
+        "spotify_id": "20WqLDpTW9822DxhyFDHA4"
+      },
+      {
+        "rank": 3,
+        "title": "Kış güneşi | Electronic House Music",
+        "duration": "4:58",
+        "spotify_id": "1qZh3Cx3gFyIqOW5Onil7D"
+      },
+      {
+        "rank": 4,
+        "title": "Amaan | Electronic House Music",
+        "duration": "4:49",
+        "spotify_id": "1Krrl6OmMn8lsFZHObdcpb"
+      },
+      {
+        "rank": 5,
+        "title": "Burdayız | Electronic House Music",
+        "duration": "3:54",
+        "spotify_id": "3oBkyBlPBeeAGaghPEsNxx"
+      }
+    ]
+  },
+  "apple_music": {
+    "artist_id": "1849742007",
+    "artist_url": "https://music.apple.com/tr/artist/hakan-alanyali/1849742007",
+    "albums": [
+      {
+        "title": "Bozkır",
+        "type": "album",
+        "year": 2026,
+        "apple_id": "6772752193",
+        "url": "https://music.apple.com/tr/album/bozkır/6772752193"
+      },
+      {
+        "title": "Kış güneşi | Electronic House Music",
+        "type": "album",
+        "year": 2026,
+        "apple_id": "1877332737",
+        "url": "https://music.apple.com/tr/album/kış-güneşi-electronic-house-music/1877332737"
+      },
+      {
+        "title": "Haram",
+        "type": "single",
+        "year": 2026,
+        "apple_id": "1867992346",
+        "url": "https://music.apple.com/tr/album/haram-single/1867992346"
+      },
+      {
+        "title": "Make Love To Me",
+        "type": "single",
+        "year": 2026,
+        "apple_id": "1865634390",
+        "url": "https://music.apple.com/tr/album/make-love-to-me-single/1865634390"
+      },
+      {
+        "title": "Bu sonsuz gece",
+        "type": "single",
+        "year": 2025,
+        "apple_id": "1850440581",
+        "url": "https://music.apple.com/tr/album/bu-sonsuz-gece-single/1850440581"
+      }
+    ],
+    "popular_tracks": [
+      "Bu sonsuz gecede | Electronic House Music",
+      "Amaan | Electronic House Music",
+      "Zincirler | Electronic House Music",
+      "Somebody say oh | Electronic House Music",
+      "Ethnic woman | Electronic House Music",
+      "Sil beni yalan dünya | Electronic House Music"
+    ]
+  },
+  "amazon_music": {
+    "platform": "amazon_music",
+    "artist_name": "Hakan ALANYALI",
+    "artist_url": "https://music.amazon.com/artists/B0F8R7K8JX",
+    "albums": [
+      {
+        "title": "Bozkır",
+        "asin": "B0H2SBWJJN",
+        "url": "https://www.amazon.com/dp/B0H2SBWJJN"
+      },
+      {
+        "title": "Kış güneşi | Electronic House Music",
+        "asin": "B0GN1B9BCV",
+        "url": "https://www.amazon.com/dp/B0GN1B9BCV"
+      },
+      {
+        "title": "Make Love To Me",
+        "asin": "B0GDDHYJM4",
+        "url": "https://www.amazon.com/dp/B0GDDHYJM4"
+      },
+      {
+        "title": "Haram",
+        "asin": "B0GG4PZ8BX",
+        "url": "https://www.amazon.com/dp/B0GG4PZ8BX"
+      },
+      {
+        "title": "Bu sonsuz gece",
+        "asin": "B0FYJX4V5M",
+        "url": "https://www.amazon.com/dp/B0FYJX4V5M"
+      }
+    ],
+    "total_albums": 5,
+    "fetched_at": "2026-06-30T12:04:06.661877+00:00"
+  },
+  "distrokid": {
+    "status": "pending",
+    "note": "Google güvenlik engeli nedeniyle otomatik giriş yapılamadı. ISRC kodları ve DistroKid linkleri manuel olarak eklenmelidir.",
+    "login_url": "https://distrokid.com/mymusic/",
+    "login_method": "Google ile giriş — halanyali@gmail.com",
+    "albums": []
+  },
+  "total_summary": {
+    "total_albums": 5,
+    "total_tracks": 30,
+    "platforms_covered": [
+      "spotify",
+      "apple_music",
+      "amazon_music"
+    ],
+    "platforms_pending": [
+      "distrokid",
+      "isrc_codes"
+    ]
+  },
+  "apple_music_for_artists": {
+    "artists": [
+      {
+        "name": "Baglamacı Lab"
+      },
+      {
+        "name": "Bay Beat"
+      },
+      {
+        "name": "Dark Ambient Abyss"
+      },
+      {
+        "name": "Dark Blues Music Lab"
+      },
+      {
+        "name": "DurocK"
+      },
+      {
+        "name": "Grimsteppe Lore"
+      },
+      {
+        "name": "Sezen"
+      },
+      {
+        "name": "Slavıc Noir"
+      },
+      {
+        "name": "THE KH4N"
+      },
+      {
+        "name": "Valhaven"
+      }
+    ],
+    "total": 10,
+    "account": "Hakan Alanyalı",
+    "updated": "2026-06-30T11:59:13.542474+00:00"
+  }
+}

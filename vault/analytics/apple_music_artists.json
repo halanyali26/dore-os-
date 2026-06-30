@@ -1,0 +1,39 @@
+{
+  "platform": "apple_music",
+  "total_artists": 10,
+  "artists": [
+    {
+      "name": "Baglamacı Lab"
+    },
+    {
+      "name": "Bay Beat"
+    },
+    {
+      "name": "Dark Ambient Abyss"
+    },
+    {
+      "name": "Dark Blues Music Lab"
+    },
+    {
+      "name": "DurocK"
+    },
+    {
+      "name": "Grimsteppe Lore"
+    },
+    {
+      "name": "Sezen"
+    },
+    {
+      "name": "Slavıc Noir"
+    },
+    {
+      "name": "THE KH4N"
+    },
+    {
+      "name": "Valhaven"
+    }
+  ],
+  "account": "Hakan Alanyalı Artist Account",
+  "fetched_at": "2026-06-30T11:59:13.542120+00:00",
+  "source": "https://artists.apple.com/ui/measure"
+}

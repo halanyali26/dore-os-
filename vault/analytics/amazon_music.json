@@ -1,0 +1,34 @@
+{
+  "platform": "amazon_music",
+  "artist_name": "Hakan ALANYALI",
+  "artist_url": "https://music.amazon.com/artists/B0F8R7K8JX",
+  "albums": [
+    {
+      "title": "Bozkır",
+      "asin": "B0H2SBWJJN",
+      "url": "https://www.amazon.com/dp/B0H2SBWJJN"
+    },
+    {
+      "title": "Kış güneşi | Electronic House Music",
+      "asin": "B0GN1B9BCV",
+      "url": "https://www.amazon.com/dp/B0GN1B9BCV"
+    },
+    {
+      "title": "Make Love To Me",
+      "asin": "B0GDDHYJM4",
+      "url": "https://www.amazon.com/dp/B0GDDHYJM4"
+    },
+    {
+      "title": "Haram",
+      "asin": "B0GG4PZ8BX",
+      "url": "https://www.amazon.com/dp/B0GG4PZ8BX"
+    },
+    {
+      "title": "Bu sonsuz gece",
+      "asin": "B0FYJX4V5M",
+      "url": "https://www.amazon.com/dp/B0FYJX4V5M"
+    }
+  ],
+  "total_albums": 5,
+  "fetched_at": "2026-06-30T12:04:06.661877+00:00"
+}

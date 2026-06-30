@@ -1,0 +1,44 @@
+{
+  "platform": "apple_music",
+  "artist_name": "Hakan ALANYALI",
+  "artist_id": "1849742007",
+  "url": "https://music.apple.com/tr/artist/hakan-alanyali/1849742007",
+  "label": "Dore Studio",
+  "albums": [
+    {
+      "name": "Bozkır",
+      "year": 2026,
+      "type": "album",
+      "url": ""
+    },
+    {
+      "name": "Kış güneşi | Electronic House Music",
+      "year": 2026,
+      "type": "album",
+      "url": ""
+    }
+  ],
+  "singles": [
+    {
+      "name": "Haram",
+      "year": 2026,
+      "type": "single",
+      "url": ""
+    },
+    {
+      "name": "Make Love To Me",
+      "year": 2026,
+      "type": "single",
+      "url": ""
+    },
+    {
+      "name": "Bu sonsuz gece",
+      "year": 2025,
+      "type": "single",
+      "url": "https://music.apple.com/tr/album/bu-sonsuz-gece-single/1850440581"
+    }
+  ],
+  "total_tracks": 5,
+  "status": "active",
+  "fetched_at": "2026-06-30T11:55:19.006864+00:00"
+}

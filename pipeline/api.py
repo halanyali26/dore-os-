@@ -2,14 +2,10 @@
 Dore OS v2.0 — Web Dashboard API
 FastAPI server for real-time pipeline monitoring.
 """
-import json
-import sys
+import json, sys
 from pathlib import Path
 from datetime import datetime, timezone
-
-# Ensure project root is in path
 sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 import uvicorn
@@ -17,531 +13,292 @@ import uvicorn
 BASE = Path(__file__).parent.parent
 VAULT = BASE / "vault"
 ARTISTS = BASE / "artists"
-
 app = FastAPI(title="Dore OS Dashboard", version="2.0")
-
-# ─── API Endpoints ─────────────────────────────────────────
 
 @app.get("/api/artists")
 def get_artists():
-    """List all artists with their releases and states."""
     data = []
-    if not ARTISTS.exists():
-        return data
+    if not ARTISTS.exists(): return data
     for ad in sorted(ARTISTS.iterdir()):
-        if not ad.is_dir() or ad.name.startswith("_"):
-            continue
+        if not ad.is_dir() or ad.name.startswith("_"): continue
         releases = []
         rels_dir = ad / "releases"
         if rels_dir.exists():
             for rd in sorted(rels_dir.iterdir()):
                 sf = rd / "state.json"
                 if sf.exists():
-                    state = json.loads(sf.read_text())
-                    releases.append({
-                        "slug": rd.name,
-                        "title": state.get("title", rd.name),
-                        "state": state.get("state", "IDEA"),
-                        "genre": state.get("genre", ""),
-                        "isrc": state.get("metadata", {}).get("isrc", ""),
-                        "upc": state.get("metadata", {}).get("upc", ""),
-                        "transitions": len(state.get("history", [])),
-                    })
-        data.append({"name": ad.name, "releases": releases, "total": len(releases)})
+                    s = json.loads(sf.read_text())
+                    releases.append({"slug": rd.name, "title": s.get("title", rd.name),
+                        "state": s.get("state", "IDEA"), "genre": s.get("genre", ""),
+                        "isrc": s.get("metadata", {}).get("isrc", "")})
+        info = {}
+        if (ad / "info.json").exists(): info = json.loads((ad / "info.json").read_text())
+        data.append({"name": ad.name.replace("-", " ").title(), "slug": ad.name,
+            "releases": releases, "total": len(releases), "platform": info.get("platform", "dore-os"),
+            "spotify_streams": info.get("streams_28d", 0)})
     return data
-
-
-@app.get("/api/state/{artist}/{release}")
-def get_state(artist: str, release: str):
-    """Get full state for a specific release."""
-    sf = ARTISTS / artist / "releases" / release / "state.json"
-    if not sf.exists():
-        return {"error": "not found"}
-    return json.loads(sf.read_text())
-
 
 @app.get("/api/lint")
 def get_lint():
-    """Get latest lint report."""
     alert = VAULT / "alerts" / "ALERTS.md"
-    if alert.exists():
-        return {"content": alert.read_text(), "updated": datetime.fromtimestamp(alert.stat().st_mtime).isoformat()}
+    if alert.exists(): return {"content": alert.read_text(), "updated": datetime.fromtimestamp(alert.stat().st_mtime).isoformat()}
     return {"content": "No alerts yet.", "updated": None}
-
-
-@app.get("/api/log")
-def get_log(limit: int = 20):
-    """Get recent log entries."""
-    logf = VAULT / "log.md"
-    if not logf.exists():
-        return []
-    lines = logf.read_text().strip().split("\n")
-    entries = [l for l in lines if l.startswith("## [")]
-    return entries[-limit:]
-
 
 @app.get("/api/status")
 def get_status():
-    """Live agent status from vault + system checks."""
     agents = {}
     if ARTISTS.exists():
         for ad in sorted(ARTISTS.iterdir()):
-            if not ad.is_dir() or ad.name.startswith("_"):
-                continue
+            if not ad.is_dir() or ad.name.startswith("_"): continue
             rels_dir = ad / "releases"
-            if not rels_dir.exists():
-                continue
+            if not rels_dir.exists(): continue
             for rd in sorted(rels_dir.iterdir()):
                 sf = rd / "state.json"
                 if sf.exists():
-                    state = json.loads(sf.read_text())
-                    s = state.get("state", "IDEA")
-                    agents.setdefault(s, 0)
-                    agents[s] = agents[s] + 1
-
-    lint_path = VAULT / "alerts" / "ALERTS.md"
-    lint_issues = 0
-    if lint_path.exists():
-        lint_issues = lint_path.read_text().count("\n- **[")
-
-    log_path = VAULT / "log.md"
-    log_count = 0
-    last_log = None
-    if log_path.exists():
-        lines = [l for l in log_path.read_text().split("\n") if l.startswith("## [")]
+                    s = json.loads(sf.read_text()).get("state", "IDEA")
+                    agents[s] = agents.get(s, 0) + 1
+    lint_issues = (VAULT / "alerts" / "ALERTS.md").read_text().count("\n- **[") if (VAULT / "alerts" / "ALERTS.md").exists() else 0
+    log_count, last_log = 0, None
+    if (VAULT / "log.md").exists():
+        lines = [l for l in (VAULT / "log.md").read_text().split("\n") if l.startswith("## [")]
         log_count = len(lines)
-        if lines:
-            last_log = lines[-1].strip("# [] ")
-
-    return {
-        "agents": [
-            {"name": "CURATOR", "status": "online" if agents.get("IDEA", 0) > 0 else "idle",
-             "task": f"{agents.get('IDEA', 0)} ideas" if agents.get("IDEA", 0) else "waiting"},
-            {"name": "PACKAGER", "status": "online" if agents.get("PACKAGED", 0) > 0 else "idle",
-             "task": f"{agents.get('PACKAGED', 0)} packaged" if agents.get("PACKAGED", 0) else "ISRC ready"},
-            {"name": "DISTRIBUTOR", "status": "online" if agents.get("DISTRIBUTED", 0) > 0 else "idle",
-             "task": f"{agents.get('DISTRIBUTED', 0)} distributed" if agents.get("DISTRIBUTED", 0) else "waiting upload"},
-            {"name": "GUARDIAN", "status": "online" if lint_issues == 0 else "online",
-             "task": f"{lint_issues} issues" if lint_issues else "0 issues"},
-        ],
-        "states": agents,
-        "lint_issues": lint_issues,
-        "log_count": log_count,
-        "last_log": last_log,
-    }
-
+        if lines: last_log = lines[-1].strip("# [] ")
+    return {"agents": [
+        {"name": "CURATOR", "status": "online" if agents.get("IDEA", 0) > 0 else "idle", "task": f"{agents.get('IDEA', 0)} ideas"},
+        {"name": "PACKAGER", "status": "online" if agents.get("PACKAGED", 0) > 0 else "idle", "task": f"{agents.get('PACKAGED', 0)} packaged"},
+        {"name": "DISTRIBUTOR", "status": "online" if agents.get("DISTRIBUTED", 0) > 0 else "idle", "task": f"{agents.get('DISTRIBUTED', 0)} distributed"},
+        {"name": "GUARDIAN", "status": "online", "task": f"{lint_issues} issues" if lint_issues else "clean"}],
+        "states": agents, "lint_issues": lint_issues, "log_count": log_count, "last_log": last_log}
 
 @app.get("/api/platforms")
 def get_platforms():
-    """Live platform data from Composio bridge accounts (cached 5 min)."""
     from pipeline.platform_cache import get_platform_cache
     from pipeline.composio_bridge import COMPOSIO_CAPABILITIES
-
     cache = get_platform_cache()
-
-    def build_platform_data():
+    def build():
         yt_config = COMPOSIO_CAPABILITIES.get("youtube", {})
-        sp_config = COMPOSIO_CAPABILITIES.get("spotify", {})
-
-        youtube_channels = []
-        total_subs = 0
-        total_views = 0
-
+        youtube, total_subs = [], 0
         for acc in yt_config.get("accounts", []):
             subs = acc.get("subs", 0)
-            channel_data = {
-                "name": acc.get("channel", acc.get("alias", acc["id"])),
-                "handle": acc.get("alias") or acc.get("channel", ""),
-                "subs": subs,
-                "videos": acc.get("videos", 0),
-                "views": acc.get("views", 0),
-                "url": acc.get("url", f"https://youtube.com/@{acc.get('alias', '')}" if acc.get("alias") else ""),
-            }
-            youtube_channels.append(channel_data)
+            youtube.append({"name": acc.get("channel", acc.get("alias", "")), "handle": acc.get("alias", ""),
+                "subs": subs, "videos": acc.get("videos", 0), "views": acc.get("views", 0),
+                "url": acc.get("url", ""), "channel_id": acc.get("channel_id", "")})
             total_subs += subs
-            total_views += acc.get("views", 0)
-
-        spotify_artists = []
-        for acc in sp_config.get("accounts", []):
-            spotify_artists.append({
-                "name": acc.get("alias", acc.get("id", "Unknown")),
-                "id": acc.get("id", ""),
-                "url": acc.get("external_url", f"https://open.spotify.com/artist/{acc.get('id', '')}"),
-            })
-
-        return {
-            "youtube": youtube_channels,
-            "spotify": spotify_artists,
-            "total_subs": total_subs,
-            "total_views": total_views,
-            "updated": datetime.now(tz=timezone.utc).isoformat(),
-        }
-
-    return cache.get_or_set("platforms", build_platform_data)
-
-
-@app.get("/api/platform-cache-stats")
-def get_platform_cache_stats():
-    """Get platform cache statistics."""
-    from pipeline.platform_cache import get_platform_cache, get_composio_cache
-    return {
-        "platform": get_platform_cache().stats,
-        "composio": get_composio_cache().stats,
-    }
-
+        sp = [{"name": a.get("alias", a["id"]), "id": a["id"]} for a in COMPOSIO_CAPABILITIES.get("spotify", {}).get("accounts", [])]
+        return {"youtube": youtube, "spotify": sp, "total_subs": total_subs,
+                "total_yt_channels": len(youtube), "updated": datetime.now(tz=timezone.utc).isoformat()}
+    return cache.get_or_set("platforms", build)
 
 @app.get("/api/composio")
 def get_composio():
-    """All Composio connected apps and agent capabilities."""
     try:
         from pipeline.composio_bridge import COMPOSIO_CAPABILITIES, AGENT_COMPOSIO_MAP
         apps = {}
         for name, cfg in COMPOSIO_CAPABILITIES.items():
-            apps[name] = {
-                "accounts": len(cfg["accounts"]),
-                "read_tools": len(cfg["tools"].get("read", [])),
-                "write_tools": len(cfg["tools"].get("write", [])),
-                "agent_actions": list(cfg["agent_actions"].keys()),
-            }
-        return {
-            "apps": apps,
-            "agents": {n: list(c.keys()) for n, c in AGENT_COMPOSIO_MAP.items()},
-            "total_accounts": sum(len(c["accounts"]) for c in COMPOSIO_CAPABILITIES.values()),
-            "total_tools": sum(len(c["tools"].get("read",[]))+len(c["tools"].get("write",[])) for c in COMPOSIO_CAPABILITIES.values()),
-        }
-    except Exception as e:
-        return {"error": str(e)}
+            apps[name] = {"accounts": len(cfg["accounts"]), "read_tools": len(cfg["tools"].get("read", [])),
+                         "write_tools": len(cfg["tools"].get("write", [])), "actions": list(cfg["agent_actions"].keys())}
+        return {"apps": apps, "agents": {n: list(c.keys()) for n, c in AGENT_COMPOSIO_MAP.items()},
+                "total_accounts": sum(len(c["accounts"]) for c in COMPOSIO_CAPABILITIES.values()),
+                "total_tools": sum(len(c["tools"].get("read",[]))+len(c["tools"].get("write",[])) for c in COMPOSIO_CAPABILITIES.values())}
+    except Exception as e: return {"error": str(e)}
 
+@app.get("/api/mapping")
+def get_mapping():
+    mf = VAULT / "analytics" / "artist_mapping.json"
+    if mf.exists(): return json.loads(mf.read_text())
+    from pipeline.composio_bridge import COMPOSIO_CAPABILITIES
+    artists_map = {}
+    for d in sorted(ARTISTS.iterdir()):
+        if d.is_dir() and not d.name.startswith("_"):
+            artists_map[d.name] = {"name": d.name.replace("-", " ").title()}
+    for acc in COMPOSIO_CAPABILITIES.get("youtube", {}).get("accounts", []):
+        ch = acc.get("channel", "").lower()
+        for slug in artists_map:
+            if slug.replace("-", " ")[:6] in ch or ch[:6] in slug.replace("-", " "):
+                artists_map[slug]["youtube_channel_id"] = acc.get("channel_id", "")
+    return {"artists": artists_map}
 
-# ─── Dashboard HTML ────────────────────────────────────────
+@app.get("/api/composio-status")
+def get_composio_status():
+    sf = VAULT / "analytics" / "composio_status.json"
+    if sf.exists():
+        d = json.loads(sf.read_text())
+        return {"status": d.get("composio_mcp", {}).get("status", "unknown"),
+                "tools": d.get("composio_mcp", {}).get("tools_discovered", 0),
+                "updated": d.get("generated_at", "")}
+    return {"status": "not connected", "tools": 0}
 
 DASHBOARD_HTML = r"""<!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DORE/OS :: AGENT ROOMS</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DORE/OS :: CONTROL CENTER</title>
 <style>
 @font-face{font-family:'JetBrains Mono';src:local('JetBrains Mono'),local('Menlo'),local('Consolas'),local('monospace')}
-:root{
-  --bg:#06060c; --bg2:#0c0c18; --panel:rgba(16,16,32,0.85);
-  --border:rgba(255,255,255,0.06); --border-glow:rgba(212,132,42,0.15);
-  --text:#c4c4d0; --dim:#555570; --bright:#e8e8f0;
-  --amber:#d4842a; --amber-glow:#d4842a55; --amber-dim:rgba(212,132,42,0.12);
-  --green:#3a8; --green-glow:#3a8866; --red:#c44; --blue:#557799; --cyan:#3aa; --purple:#7c5ce7;
-  --font:'JetBrains Mono','Menlo','Consolas',monospace;
-  --radius:12px; --radius-sm:6px;
-}
+:root{--bg:#050510;--panel:#0a0a1a;--border:#151530;--text:#a8a8c0;--dim:#4a4a60;--amber:#e89820;--amber-glow:#e8982033;--green:#2ecc71;--red:#e74c3c;--blue:#5b9bd5;--cyan:#1abc9c;--purple:#8e7cc3;--font:'JetBrains Mono','Menlo','Consolas',monospace;--radius:8px}
 *{margin:0;padding:0;box-sizing:border-box}
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:var(--font);
-  font-size:11px;
-  line-height:1.5;
-  min-height:100vh;
-  position:relative;
-  overflow-x:hidden;
-}
-body::before{
-  content:'';position:fixed;inset:0;
-  background:
-    radial-gradient(ellipse at 20% 0%, rgba(124,92,231,0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 100%, rgba(212,132,42,0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 50%, rgba(58,136,102,0.03) 0%, transparent 70%);
-  pointer-events:none;z-index:0;
-}
-.container{max-width:1300px;margin:0 auto;padding:24px 20px;position:relative;z-index:1}
-
-/* Header */
-.header{
-  display:flex;justify-content:space-between;align-items:flex-end;
-  padding-bottom:16px;margin-bottom:20px;
-  border-bottom:1px solid var(--border);
-}
-.header h1{font-size:20px;font-weight:400;letter-spacing:6px;color:var(--amber);text-transform:uppercase}
-.header h1 span{color:var(--dim);letter-spacing:2px}
-.header h1 .sub{font-size:9px;letter-spacing:3px;display:block;margin-top:2px;color:var(--dim)}
-.status-line{font-size:9px;color:var(--dim);text-align:right;text-transform:uppercase;letter-spacing:2px}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:11px;line-height:1.5;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(142,124,195,0.04) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(232,152,32,0.03) 0%,transparent 50%);pointer-events:none;z-index:0}
+.container{max-width:1440px;margin:0 auto;padding:20px;position:relative;z-index:1}
+.header{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid var(--border)}
+.header h1{font-size:18px;font-weight:400;letter-spacing:4px;color:var(--amber)}
+.status-line{font-size:9px;color:var(--dim);text-align:right}
 .status-line .live{color:var(--green);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-
-/* Stats Row */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
-.stat-card{
-  background:var(--panel);border:1px solid var(--border);
-  border-radius:var(--radius);padding:16px;
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  text-align:center;transition:border-color 0.3s;
-}
-.stat-card:hover{border-color:var(--border-glow)}
-.stat-card .value{font-size:28px;font-weight:300;color:var(--amber);letter-spacing:2px}
-.stat-card .label{font-size:8px;text-transform:uppercase;letter-spacing:3px;color:var(--dim);margin-top:4px}
-
-/* ─── AGENT ROOMS ──────────────────────── */
-.section-label{
-  font-size:9px;text-transform:uppercase;letter-spacing:4px;
-  color:var(--dim);margin-bottom:12px;display:flex;align-items:center;gap:8px;
-}
-.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
-.rooms-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
-.agent-room{
-  background:var(--panel);border:1px solid var(--border);
-  border-radius:var(--radius);padding:18px;
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  position:relative;overflow:hidden;
-  transition:all 0.3s;
-}
-.agent-room::before{
-  content:'';position:absolute;top:0;left:0;width:3px;height:100%;
-  background:var(--border-glow);opacity:0;transition:opacity 0.3s;
-}
-.agent-room:hover{border-color:var(--border-glow);transform:translateY(-1px)}
-.agent-room:hover::before{opacity:1}
-.agent-room.online{border-left:2px solid var(--green)}
-.agent-room.idle{border-left:2px solid var(--dim)}
-.room-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.room-agent{display:flex;align-items:center;gap:10px}
-.room-avatar{
-  width:32px;height:32px;border-radius:var(--radius-sm);
-  display:flex;align-items:center;justify-content:center;font-size:16px;
-  border:1px solid var(--border);
-}
-.av-curator{background:rgba(124,92,231,0.15);border-color:rgba(124,92,231,0.3)}
-.av-packager{background:rgba(212,132,42,0.15);border-color:rgba(212,132,42,0.3)}
-.av-distributor{background:rgba(58,136,102,0.15);border-color:rgba(58,136,102,0.3)}
-.av-guardian{background:rgba(85,119,153,0.15);border-color:rgba(85,119,153,0.3)}
-.room-name{font-size:10px;text-transform:uppercase;letter-spacing:3px;color:var(--text)}
-.room-status{font-size:7px;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:4px}
-.room-status .dot{width:5px;height:5px;border-radius:50%}
-.room-status .dot.online{background:var(--green);box-shadow:0 0 8px var(--green)}
-.room-status .dot.idle{background:var(--dim)}
-.room-status .task{color:var(--dim)}
-.room-body{display:flex;flex-wrap:wrap;gap:4px}
-.room-tag{
-  font-size:7px;padding:3px 8px;border-radius:10px;
-  letter-spacing:1px;text-transform:uppercase;
-  border:1px solid var(--border);
-}
-.room-tag.action{background:var(--amber-dim);border-color:rgba(212,132,42,0.2);color:var(--amber)}
-
-/* ─── PIPELINE KANBAN ──────────────────── */
-.kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:20px}
-.kanban-col{
-  background:var(--panel);border:1px solid var(--border);
-  border-radius:var(--radius);padding:12px;
-  backdrop-filter:blur(12px);
-}
-.kanban-col h4{font-size:8px;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
-.kanban-col h4.idea{color:var(--dim)}
-.kanban-col h4.production{color:var(--blue)}
-.kanban-col h4.mastered{color:var(--cyan)}
-.kanban-col h4.packaged{color:var(--amber)}
-.kanban-col h4.distributed{color:var(--green)}
-.kanban-item{
-  background:rgba(255,255,255,0.02);border:1px solid var(--border);
-  border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:4px;
-  font-size:9px;transition:all 0.2s;
-}
-.kanban-item:hover{background:rgba(255,255,255,0.04);border-color:var(--border-glow)}
-.kanban-item .ki-title{color:var(--text);margin-bottom:2px}
-.kanban-item .ki-meta{font-size:7px;color:var(--dim)}
-.kanban-empty{font-size:8px;color:var(--dim);text-align:center;padding:12px 0;opacity:0.5}
-
-/* ─── PLATFORM BAR ─────────────────────── */
-.platform-bar{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:20px}
-.plat-panel{
-  background:var(--panel);border:1px solid var(--border);
-  border-radius:var(--radius);padding:14px;
-  backdrop-filter:blur(12px);
-}
-.plat-panel h5{font-size:8px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);margin-bottom:10px}
-.plat-item{display:flex;justify-content:space-between;padding:4px 0;font-size:8px;border-bottom:1px solid rgba(255,255,255,0.02)}
-.plat-item:last-child{border-bottom:0}
-.plat-item .key{color:var(--dim)}
-.plat-item .val{color:var(--amber)}
-
-/* ─── ACTIVITY FEED ────────────────────── */
-.activity{
-  background:var(--panel);border:1px solid var(--border);
-  border-radius:var(--radius);padding:16px;
-  backdrop-filter:blur(12px);margin-bottom:20px;
-}
-.activity h4{font-size:9px;text-transform:uppercase;letter-spacing:3px;color:var(--dim);margin-bottom:10px}
-.activity .log-line{
-  font-size:9px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.02);
-  color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.activity .log-line .ts{color:var(--dim);margin-right:8px}
-
-/* Footer */
-.footer{
-  text-align:right;font-size:8px;color:var(--dim);
-  letter-spacing:1px;text-transform:uppercase;
-  border-top:1px solid var(--border);padding-top:12px;
-}
-.footer .blink{animation:blink 1s steps(1) infinite}
-@keyframes blink{50%{visibility:hidden}}
-
-@media(max-width:900px){
-  .kanban{grid-template-columns:repeat(3,1fr)}
-  .rooms-grid{grid-template-columns:1fr}
-  .platform-bar{grid-template-columns:1fr}
-  .stats-row{grid-template-columns:repeat(2,1fr)}
-}
+.stats-bar{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:16px}
+.stat-box{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:12px 10px;text-align:center}
+.stat-box .val{font-size:24px;font-weight:300;color:var(--amber)}
+.stat-box .lbl{font-size:7px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);margin-top:3px}
+.section-title{font-size:9px;text-transform:uppercase;letter-spacing:3px;color:var(--dim);margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.artists-table{width:100%;border-collapse:collapse;margin-bottom:16px}
+.artists-table th{font-size:8px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+.artists-table td{padding:7px 10px;font-size:9px;border-bottom:1px solid rgba(255,255,255,0.02)}
+.artists-table tr:hover{background:rgba(255,255,255,0.01)}
+.platform-badge{display:inline-block;font-size:7px;padding:1px 5px;border-radius:3px;margin:0 1px;letter-spacing:1px}
+.badge-spotify{background:rgba(46,204,113,0.1);color:var(--green);border:1px solid rgba(46,204,113,0.2)}
+.badge-apple{background:rgba(232,152,32,0.1);color:var(--amber);border:1px solid rgba(232,152,32,0.2)}
+.badge-youtube{background:rgba(231,76,60,0.1);color:var(--red);border:1px solid rgba(231,76,60,0.2)}
+.badge-amazon{background:rgba(91,155,213,0.1);color:var(--blue);border:1px solid rgba(91,155,213,0.2)}
+.mapping-table{width:100%;border-collapse:collapse;margin-bottom:16px}
+.mapping-table th{font-size:8px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+.mapping-table td{padding:7px 10px;font-size:9px;border-bottom:1px solid rgba(255,255,255,0.02)}
+.mapping-dot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:4px}
+.mapping-dot.green{background:var(--green);box-shadow:0 0 4px var(--green)}
+.mapping-dot.dim{background:var(--dim)}
+.mapping-id{font-size:8px}
+.mapping-id.available{color:var(--green)}
+.yt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px}
+.yt-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+.yt-card h4{font-size:9px;color:var(--text);margin-bottom:6px}
+.yt-stat{display:flex;justify-content:space-between;font-size:8px;padding:2px 0}
+.yt-stat .k{color:var(--dim)}.yt-stat .v{color:var(--amber)}
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px}
+.agent-row{display:flex;justify-content:space-between;align-items:center;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:4px}
+.agent-row .dot{width:6px;height:6px;border-radius:50%;margin-right:8px}
+.agent-row .dot.online{background:var(--green);box-shadow:0 0 6px var(--green)}
+.agent-row .dot.idle{background:var(--dim)}
+.agent-row .aname{font-size:9px;letter-spacing:2px;text-transform:uppercase}
+.agent-row .atask{font-size:7px;color:var(--dim)}
+.cron-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:4px}
+.cron-name{font-size:8px;letter-spacing:1px;color:var(--text)}
+.cron-sched{font-size:7px;color:var(--dim)}
+.cron-status{font-size:7px;padding:1px 5px;border-radius:3px}
+.cron-active{background:rgba(46,204,113,0.1);color:var(--green)}
+.activity-log{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:16px}
+.log-entry{font-size:8px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.01);display:flex;gap:8px}
+.log-ts{color:var(--dim);min-width:55px}
+.log-msg{color:var(--text)}
+.footer{text-align:right;font-size:7px;color:var(--dim);border-top:1px solid var(--border);padding-top:10px;margin-top:16px}
+.composio-badge{display:inline-block;font-size:7px;padding:1px 6px;border-radius:3px;margin-left:6px}
+.composio-ok{background:rgba(46,204,113,0.1);color:var(--green);border:1px solid rgba(46,204,113,0.2)}
 </style>
 </head>
 <body>
 <div class="container">
-
 <div class="header">
-  <h1>DORE<span>/</span>OS <span class="sub">AI MUSIC LABEL :: MULTI-AGENT ROOMS</span></h1>
-  <div class="status-line">
-    <span class="live">●</span> SYSTEM ONLINE<br>
-    <span id="clock"></span>
+  <h1>DORE<span style="color:var(--dim)">/</span>OS <span style="font-size:8px;letter-spacing:2px;color:var(--dim);display:block">AI MUSIC LABEL CONTROL CENTER</span></h1>
+  <div class="status-line"><span class="live">●</span> ONLINE &nbsp;|&nbsp; <span id="clock"></span>&nbsp;<span id="composio-badge"></span></div>
+</div>
+<div class="stats-bar" id="stats-bar"></div>
+<div class="section-title">▸ ARTISTS (12)</div>
+<table class="artists-table"><thead><tr><th>#</th><th>Artist</th><th>Platforms</th><th>Releases</th><th>YT</th><th>SP</th></tr></thead><tbody></tbody></table>
+<div class="section-title">▸ YOUTUBE CHANNELS (7)</div>
+<div class="yt-grid" id="yt-grid"></div>
+<div class="section-title">▸ CROSS-PLATFORM MAPPING</div>
+<table class="mapping-table"><thead><tr><th>Artist</th><th>Spotify ID</th><th>Apple Music ID</th><th>YouTube Channel ID</th></tr></thead><tbody></tbody></table>
+<div class="section-title">▸ SYSTEM</div>
+<div class="bottom-grid">
+  <div>
+    <div style="font-size:8px;color:var(--dim);margin-bottom:6px;letter-spacing:2px">AGENTS</div><div id="agents-panel"></div>
+    <div style="font-size:8px;color:var(--dim);margin:10px 0 6px;letter-spacing:2px">CRON JOBS</div><div id="cron-panel"></div>
+  </div>
+  <div>
+    <div style="font-size:8px;color:var(--dim);margin-bottom:6px;letter-spacing:2px">ACTIVITY LOG</div><div class="activity-log" id="activity-log"></div>
   </div>
 </div>
-
-<div class="stats-row" id="stats"></div>
-
-<div class="section-label">▸ AGENT ROOMS</div>
-<div class="rooms-grid" id="agent-rooms"></div>
-
-<div class="section-label">▸ PIPELINE :: KANBAN BOARD</div>
-<div class="kanban" id="kanban"></div>
-
-<div class="section-label">▸ CONNECTED PLATFORMS</div>
-<div class="platform-bar" id="platforms"></div>
-
-<div class="section-label">▸ ACTIVITY FEED</div>
-<div class="activity" id="activity">
-  <div class="log-line"><span class="ts">--:--</span> loading...</div>
+<div class="footer">DORE/OS v2.0 · 12 ARTISTS · 7 YT CHANNELS · 7 CRON JOBS · <span id="clock2"></span></div>
 </div>
-
-<div class="footer">
-  DORE/OS v2.0 &nbsp;|&nbsp; AGENT ROOMS &nbsp;|&nbsp; REFRESH 10s &nbsp;|&nbsp; <span id="clock2"></span><span class="blink">_</span>
-</div>
-
-</div>
-
 <script>
 const AGENT_ICONS={CURATOR:'🎨',PACKAGER:'📦',DISTRIBUTOR:'🚀',GUARDIAN:'🛡️'};
-const AGENT_AVATAR={CURATOR:'av-curator',PACKAGER:'av-packager',DISTRIBUTOR:'av-distributor',GUARDIAN:'av-guardian'};
-const KANBAN_COLS=['IDEA','PRODUCTION','MASTERED','PACKAGED','DISTRIBUTED'];
-const COL_CLASS={IDEA:'idea',PRODUCTION:'production',MASTERED:'mastered',PACKAGED:'packaged',DISTRIBUTED:'distributed'};
-
 async function load(){
   try{
-    const[A,L,P,S]=await Promise.all([
+    const[A,P,S,M,CS]=await Promise.all([
       fetch('/api/artists').then(r=>r.json()),
-      fetch('/api/lint').then(r=>r.json()),
       fetch('/api/platforms').then(r=>r.json()),
-      fetch('/api/status').then(r=>r.json())
+      fetch('/api/status').then(r=>r.json()),
+      fetch('/api/mapping').then(r=>r.json()),
+      fetch('/api/composio-status').then(r=>r.json())
     ]);
-
+    // Composio badge
+    document.getElementById('composio-badge').innerHTML=CS.status==='connected'?`<span class="composio-badge composio-ok">COMPOSIO ✓ ${CS.tools} tools</span>`:'';
     // Stats
-    let tr=0;
-    A.forEach(a=>{tr+=a.total});
-    document.getElementById('stats').innerHTML=`
-      <div class="stat-card"><div class="value">${String(A.length).padStart(2,'0')}</div><div class="label">Artists</div></div>
-      <div class="stat-card"><div class="value">${String(tr).padStart(2,'0')}</div><div class="label">Releases</div></div>
-      <div class="stat-card"><div class="value">${String(P.total_subs).replace(/(\\d)(?=(\\d{3})+$)/g,'$1 ')}</div><div class="label">YT Subscribers</div></div>
-      <div class="stat-card"><div class="value">${String(P.total_views).replace(/(\\d)(?=(\\d{3})+$)/g,'$1 ')}</div><div class="label">YT Views</div></div>`;
-
-    // Agent Rooms
-    let liveAgents=S.agents||[{name:'CURATOR',status:'online',task:'waiting'},{name:'PACKAGER',status:'idle',task:'ISRC ready'},{name:'DISTRIBUTOR',status:'idle',task:'waiting upload'},{name:'GUARDIAN',status:'online',task:'0 issues'}];
-    let roomsHTML='';
-    liveAgents.forEach(a=>{
-      let actions=[];
-      if(a.name==='CURATOR') actions=['discover_trends','generate_idea'];
-      if(a.name==='PACKAGER') actions=['generate_isrc','generate_metadata','store_assets'];
-      if(a.name==='DISTRIBUTOR') actions=['youtube_upload','spotify_playlist','notify_email'];
-      if(a.name==='GUARDIAN') actions=['check_youtube','check_spotify','lint_vault'];
-      roomsHTML+=`<div class="agent-room ${a.status}">
-        <div class="room-header">
-          <div class="room-agent">
-            <div class="room-avatar ${AGENT_AVATAR[a.name]||'av-curator'}">${AGENT_ICONS[a.name]||'🤖'}</div>
-            <div class="room-name">${a.name}</div>
-          </div>
-          <div class="room-status">
-            <span class="dot ${a.status}"></span>
-            <span class="task">${a.task}</span>
-          </div>
-        </div>
-        <div class="room-body">
-          ${actions.map(act=>`<span class="room-tag action">${act}</span>`).join('')}
-        </div>
-      </div>`;
+    document.getElementById('stats-bar').innerHTML=`
+      <div class="stat-box"><div class="val">${A.length}</div><div class="lbl">Artists</div></div>
+      <div class="stat-box"><div class="val">${P.total_yt_channels||7}</div><div class="lbl">YT Channels</div></div>
+      <div class="stat-box"><div class="val">${CS.tools||0}</div><div class="lbl">Composio Tools</div></div>
+      <div class="stat-box"><div class="val">${S.lint_issues||0}</div><div class="lbl">Issues</div></div>
+      <div class="stat-box"><div class="val">${S.log_count||0}</div><div class="lbl">Logs</div></div>
+      <div class="stat-box"><div class="val">${CS.status==='connected'?'✓':'—'}</div><div class="lbl">Composio</div></div>`;
+    // Artists table
+    let rows=''; A.forEach((a,i)=>{
+      let plats=[];
+      if(a.platform==='spotify') plats.push('SP');
+      if(a.platform==='apple_music') plats.push('AM');
+      let ma=(M.artists||{})[a.slug]||{};
+      if(ma.youtube_channel_id) plats.push('YT');
+      let yt=P.youtube.find(y=>y.name&&y.name.toLowerCase().includes(a.slug.replace(/-/g,' ').substring(0,6)));
+      rows+=`<tr><td>${String(i+1).padStart(2,'0')}</td><td><b>${a.name}</b></td>
+        <td>${plats.map(p=>`<span class="platform-badge badge-${p==='SP'?'spotify':p==='AM'?'apple':'youtube'}">${p}</span>`).join(' ')}</td>
+        <td>${a.total||'—'}</td><td>${yt?yt.subs:'—'}</td><td>${a.spotify_streams||'—'}</td></tr>`;
     });
-    document.getElementById('agent-rooms').innerHTML=roomsHTML;
-
-    // Pipeline Kanban
-    let kanbanHTML='';
-    KANBAN_COLS.forEach(col=>{
-      let items=A.flatMap(a=>a.releases.filter(r=>r.state===col).map(r=>({...r,artist:a.name})));
-      kanbanHTML+=`<div class="kanban-col"><h4 class="${COL_CLASS[col]||'idea'}">${col}</h4>`;
-      if(items.length===0){
-        kanbanHTML+=`<div class="kanban-empty">— empty —</div>`;
-      }else{
-        items.forEach(it=>{
-          kanbanHTML+=`<div class="kanban-item">
-            <div class="ki-title">${it.title||it.slug}</div>
-            <div class="ki-meta">${it.artist} · ${it.genre||''}</div>
-          </div>`;
-        });
-      }
-      kanbanHTML+=`</div>`;
+    document.querySelector('#artists-table tbody').innerHTML=rows;
+    // YouTube
+    document.getElementById('yt-grid').innerHTML=P.youtube.map(c=>`<div class="yt-card"><h4>${c.name}</h4>
+      <div class="yt-stat"><span class="k">Subs</span><span class="v">${c.subs||'—'}</span></div>
+      <div class="yt-stat"><span class="k">Views</span><span class="v">${c.views||'—'}</span></div>
+      ${c.channel_id?`<div class="yt-stat" style="font-size:6px"><span class="k">ID</span><span class="v">${c.channel_id.substring(0,14)}...</span></div>`:''}
+    </div>`).join('');
+    // Mapping
+    let artistsList = M.artists || {};
+    let mHTML='';
+    A.forEach(a=>{
+      let m=artistsList[a.slug]||{};
+      let sp=m.spotify_id||m.spotify_url||'—', am=m.apple_music_id||m.apple_music_url||'—', yt=m.youtube_channel_id||'—';
+      mHTML+=`<tr><td><b>${a.name}</b></td>
+        <td>${sp!=='—'?'<span class="mapping-dot green"></span><span class="mapping-id available">'+sp.toString().substring(0,40)+'</span>':'<span class="mapping-dot dim"></span>—'}</td>
+        <td>${am!=='—'?'<span class="mapping-dot green"></span><span class="mapping-id available">'+am.toString().substring(0,40)+'</span>':'<span class="mapping-dot dim"></span>—'}</td>
+        <td>${yt!=='—'?'<span class="mapping-dot green"></span><span class="mapping-id available">'+yt.toString().substring(0,40)+'</span>':'<span class="mapping-dot dim"></span>—'}</td></tr>`;
     });
-    document.getElementById('kanban').innerHTML=kanbanHTML;
-
-    // Platforms
-    let ph='';
-    let yt=P.youtube.slice(0,4);
-    ph+=`<div class="plat-panel"><h5>▸ YOUTUBE</h5>`;
-    yt.forEach(c=>{ph+=`<div class="plat-item"><span class="key">${c.name}</span><span class="val">${c.subs} sub</span></div>`});
-    ph+=`</div>`;
-    ph+=`<div class="plat-panel"><h5>▸ SPOTIFY</h5>`;
-    P.spotify.forEach(s=>{ph+=`<div class="plat-item"><span class="key">${s.name}</span><span class="val" style="color:var(--green)">ACTIVE</span></div>`});
-    if(!P.spotify.length) ph+=`<div class="plat-item"><span class="key">No artists</span><span class="val">--</span></div>`;
-    ph+=`</div>`;
-    ph+=`<div class="plat-panel"><h5>▸ GUARDIAN</h5>
-      <div class="plat-item"><span class="key">Lint Issues</span><span class="val" style="color:${S.lint_issues>0?'var(--red)':'var(--green)'}">${S.lint_issues||0}</span></div>
-      <div class="plat-item"><span class="key">Log Entries</span><span class="val">${S.log_count||0}</span></div>
-      ${S.last_log?`<div class="plat-item"><span class="key">Last</span><span class="val" style="font-size:7px">${S.last_log.substring(0,40)}</span></div>`:''}
-    </div>`;
-    document.getElementById('platforms').innerHTML=ph;
-
-    // Activity Feed
-    let logHTML='';
-    let logs=[];
-    if(S.last_log) logs.push({ts:'now',text:S.last_log});
-    A.forEach(a=>{a.releases.forEach(r=>{logs.push({ts:r.state,text:`${a.name}/${r.slug}: ${r.state} · ${r.genre||''}`})})});
-    logs=logs.slice(0,8);
-    if(logs.length===0) logs=[{ts:'--:--',text:'No activity yet'}];
-    logs.forEach(l=>{logHTML+=`<div class="log-line"><span class="ts">${l.ts}</span>${l.text}</div>`});
-    document.getElementById('activity').innerHTML='<h4>▸ ACTIVITY FEED</h4>'+logHTML;
-
-    const t=new Date().toLocaleTimeString('tr-TR',{hour12:false});
-    document.getElementById('clock').textContent=t;
-    document.getElementById('clock2').textContent=t;
+    document.querySelector('.mapping-table tbody').innerHTML=mHTML;
+    // Agents
+    document.getElementById('agents-panel').innerHTML=(S.agents||[]).map(a=>
+      `<div class="agent-row"><div style="display:flex;align-items:center"><span class="dot ${a.status}"></span><span class="aname">${AGENT_ICONS[a.name]||''} ${a.name}</span></div><span class="atask">${a.task||'...'}</span></div>`).join('');
+    // Cron (7 jobs, all active)
+    document.getElementById('cron-panel').innerHTML=`
+      <div class="cron-card"><span class="cron-name">🛡️ Guardian Devriye</span><span class="cron-status cron-active">every 30m</span><br><span class="cron-sched">Lint + ISRC + stale check</span></div>
+      <div class="cron-card"><span class="cron-name">📊 Platform İzleme</span><span class="cron-status cron-active">every 1h</span><br><span class="cron-sched">Composio health + stats</span></div>
+      <div class="cron-card"><span class="cron-name">📺 YouTube İzleme</span><span class="cron-status cron-active">every 6h</span><br><span class="cron-sched">Kanal istatistikleri</span></div>
+      <div class="cron-card"><span class="cron-name">🎵 Spotify İzleme</span><span class="cron-status cron-active">every 2h</span><br><span class="cron-sched">Artist stats + new releases</span></div>
+      <div class="cron-card"><span class="cron-name">🍎 Apple Music İzleme</span><span class="cron-status cron-active">every 3h</span><br><span class="cron-sched">Artist stats + trends</span></div>
+      <div class="cron-card"><span class="cron-name">📋 Günlük Özet Raporu</span><span class="cron-status cron-active">daily 09:00</span><br><span class="cron-sched">Tüm platform özeti</span></div>
+      <div class="cron-card"><span class="cron-name">📈 Haftalık Analytics</span><span class="cron-status cron-active">weekly Mon 10:00</span><br><span class="cron-sched">Detaylı haftalık rapor</span></div>`;
+    // Activity
+    let log='';
+    if(S.last_log) log+=`<div class="log-entry"><span class="log-ts">now</span><span class="log-msg">${S.last_log}</span></div>`;
+    A.forEach(a=>a.releases.forEach(r=>{log+=`<div class="log-entry"><span class="log-ts">${r.state}</span><span class="log-msg">${a.name} · ${r.title||r.slug} · ${r.genre||''}</span></div>`}));
+    document.getElementById('activity-log').innerHTML=log||'<div class="log-entry"><span class="log-ts">--</span><span class="log-msg">No activity</span></div>';
+    let t=new Date().toLocaleTimeString('tr-TR',{hour12:false});
+    document.getElementById('clock').textContent=t;document.getElementById('clock2').textContent=t;
   }catch(e){console.error(e)}
 }
-load();
-setInterval(load,10000);
-</script>
-</body>
-</html>"""
-
+load();setInterval(load,10000);
+</script></body></html>"""
 
 @app.get("/", response_class=HTMLResponse)
-def dashboard():
-    return HTMLResponse(DASHBOARD_HTML)
-
+def dashboard(): return HTMLResponse(DASHBOARD_HTML)
 
 def main():
     print("Dore OS Dashboard → http://localhost:8700")
     uvicorn.run(app, host="0.0.0.0", port=8700, log_level="warning")
 
-
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": main()

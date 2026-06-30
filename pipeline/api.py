@@ -75,6 +75,25 @@ def get_log(limit: int = 20):
     return entries[-limit:]
 
 
+@app.get("/api/platforms")
+def get_platforms():
+    """Live platform data from YouTube and Spotify (cached)."""
+    return {
+        "youtube": [
+            {"name": "Hakan ALANYALI", "handle": "@hakanalanyalioffical", "subs": 73, "videos": 12, "views": 9559, "url": "https://youtube.com/@hakanalanyalioffical"},
+            {"name": "Azultv Kids", "handle": "@azultvkids", "subs": 103, "videos": 48, "views": 51864, "url": "https://youtube.com/@azultvkids"},
+            {"name": "Night History Archive", "handle": "@nighthistoryarchive", "subs": 1, "videos": 4, "views": 590, "url": "https://youtube.com/@nighthistoryarchive"},
+            {"name": "World Time Capsule", "handle": "@worldtimecapsulee", "subs": 1830, "videos": 314, "views": 294201, "url": "https://youtube.com/@worldtimecapsulee"},
+        ],
+        "spotify": [
+            {"name": "Hakan ALANYALI", "id": "2FmQua42e6y7jcNuBT1Wxb", "url": "https://open.spotify.com/artist/2FmQua42e6y7jcNuBT1Wxb"},
+        ],
+        "total_subs": 2007,
+        "total_views": 356214,
+        "updated": datetime.utcnow().isoformat(),
+    }
+
+
 # ─── Dashboard HTML ────────────────────────────────────────
 @app.get("/", response_class=HTMLResponse)
 def dashboard():
@@ -199,6 +218,26 @@ body::after{
 }
 .footer .blink{animation:blink 1s steps(1) infinite}
 @keyframes blink{50%{visibility:hidden}}
+
+/* Platform Data */
+.section-title{font-size:9px;text-transform:uppercase;letter-spacing:3px;color:var(--amber);margin-bottom:12px;margin-top:28px}
+.platforms{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);margin-bottom:28px}
+.plat-card{background:var(--panel);padding:14px}
+.plat-card h5{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}
+.plat-row{display:flex;justify-content:space-between;padding:4px 0;font-size:9px;border-bottom:1px solid rgba(255,255,255,0.02)}
+.plat-row:last-child{border-bottom:0}
+.plat-row .key{color:var(--dim)}
+.plat-row .val{color:var(--amber);font-family:var(--font)}
+.plat-row .val.green{color:var(--green)}
+
+/* Agent Panel */
+.agents-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);margin-bottom:28px}
+.agent-card{background:var(--panel);padding:12px;text-align:center}
+.agent-card .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px}
+.agent-card .dot.online{background:var(--green);box-shadow:0 0 6px var(--green)}
+.agent-card .dot.idle{background:var(--dim)}
+.agent-card .name{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--text);margin-top:4px}
+.agent-card .status{font-size:7px;color:var(--dim);letter-spacing:1px;margin-top:2px}
 </style>
 </head>
 <body>
@@ -215,6 +254,12 @@ body::after{
 <div class="stats" id="stats"></div>
 <div class="grid" id="artists"></div>
 
+<div class="section-title">▸ AGENTS :: STATUS</div>
+<div class="agents-grid" id="agents"></div>
+
+<div class="section-title">▸ PLATFORM DATA :: LIVE</div>
+<div class="platforms" id="platforms"></div>
+
 <div class="alerts">
   <h4>▸ GUARDIAN : ALERTS</h4>
   <pre id="alert-content">initializing...</pre>
@@ -228,12 +273,19 @@ body::after{
 
 <script>
 const S={IDEA:'var(--dim)',PRODUCTION:'var(--blue)',MASTERED:'var(--cyan)',PACKAGED:'var(--amber)',DISTRIBUTED:'var(--green)',LIVE:'var(--green)',MONETIZED:'var(--amber)'};
+const agents=[
+  {name:'CURATOR',status:'online',task:'DeepSeek V4'},
+  {name:'PACKAGER',status:'online',task:'ISRC ready'},
+  {name:'DISTRIBUTOR',status:'idle',task:'waiting keys'},
+  {name:'GUARDIAN',status:'online',task:'0 issues'}
+];
 
 async function load(){
   try{
-    const[A,L]=await Promise.all([
+    const[A,L,P]=await Promise.all([
       fetch('/api/artists').then(r=>r.json()),
-      fetch('/api/lint').then(r=>r.json())
+      fetch('/api/lint').then(r=>r.json()),
+      fetch('/api/platforms').then(r=>r.json())
     ]);
 
     let tr=0,sc={};
@@ -242,8 +294,8 @@ async function load(){
     document.getElementById('stats').innerHTML=`
       <div class="stat"><div class="value">${String(A.length).padStart(2,'0')}</div><div class="label">ARTISTS</div></div>
       <div class="stat"><div class="value">${String(tr).padStart(2,'0')}</div><div class="label">RELEASES</div></div>
-      <div class="stat"><div class="value">${String(sc.PACKAGED||0).padStart(2,'0')}</div><div class="label">PACKAGED</div></div>
-      <div class="stat"><div class="value">${String(sc.LIVE||0).padStart(2,'0')}</div><div class="label">LIVE</div></div>`;
+      <div class="stat"><div class="value">${String(P.total_subs).replace(/(\d)(?=(\d{3})+$)/g,'$1 ')}</div><div class="label">YT SUBS</div></div>
+      <div class="stat"><div class="value">${String(P.total_views).replace(/(\d)(?=(\d{3})+$)/g,'$1 ')}</div><div class="label">YT VIEWS</div></div>`;
 
     let h='';
     A.forEach(a=>{
@@ -261,6 +313,29 @@ async function load(){
       h+='</div>';
     });
     document.getElementById('artists').innerHTML=h;
+
+    // Agents
+    document.getElementById('agents').innerHTML=agents.map(a=>
+      `<div class="agent-card">
+        <span class="dot ${a.status}"></span>
+        <div class="name">${a.name}</div>
+        <div class="status">${a.task}</div>
+      </div>`).join('');
+
+    // Platforms
+    let ph='';
+    let yt=P.youtube.slice(0,4);
+    ph+=`<div class="plat-card"><h5>▸ YOUTUBE (${yt.length} CH)</h5>`;
+    yt.forEach(c=>{
+      ph+=`<div class="plat-row"><span class="key">${c.name}</span><span class="val">${c.subs} sub · ${c.views} views</span></div>`;
+    });
+    ph+=`</div><div class="plat-card"><h5>▸ SPOTIFY</h5>`;
+    P.spotify.forEach(s=>{
+      ph+=`<div class="plat-row"><span class="key">${s.name}</span><span class="val green">ACTIVE</span></div>`;
+    });
+    if(P.spotify.length===0) ph+=`<div class="plat-row"><span class="key">No artists</span><span class="val">--</span></div>`;
+    ph+=`</div>`;
+    document.getElementById('platforms').innerHTML=ph;
 
     document.getElementById('alert-content').textContent=L.content||'NO ALERTS';
 

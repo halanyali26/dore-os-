@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<NewReleaseMessage xmlns="http://ddex.net/xml/ern/43" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" MessageSchemaVersionId="ern/43" LanguageAndScriptCode="en">
+  <MessageHeader>
+    <MessageId>DORE-nova-supernova-20260630</MessageId>
+    <MessageSender>Dore Studio</MessageSender>
+    <MessageRecipient>DistroKid</MessageRecipient>
+    <MessageCreatedDateTime>2026-06-30T09:07:07Z</MessageCreatedDateTime>
+  </MessageHeader>
+  <ReleaseList>
+    <Release>
+      <ReleaseReference>DORE-nova-supernova-20260630</ReleaseReference>
+      <ReleaseType>Single</ReleaseType>
+      <ReleaseDetailsByTerritory>
+        <TerritoryCode>Worldwide</TerritoryCode>
+        <Title>supernova</Title>
+        <DisplayArtistName>nova</DisplayArtistName>
+        <LabelName>Dore Studio</LabelName>
+        <OriginalReleaseDate>2026-06-30</OriginalReleaseDate>
+      </ReleaseDetailsByTerritory>
+      <ResourceList>
+        <SoundRecording>
+          <ResourceReference>T0001</ResourceReference>
+          <Title>supernova</Title>
+          <Duration>PT3M30S</Duration>
+        </SoundRecording>
+      </ResourceList>
+      <ReleaseResourceReferenceList>
+        <ReleaseResourceReference>
+          <ResourceReference>T0001</ResourceReference>
+          <SequenceNumber>1</SequenceNumber>
+        </ReleaseResourceReference>
+      </ReleaseResourceReferenceList>
+    </Release>
+  </ReleaseList>
+</NewReleaseMessage>

@@ -24,3 +24,6 @@
 - [[sources/artemis-neon-ghosts]] — Neon Ghosts
 - [[sources/volt-static-pulse]] — Static Pulse
 - [[sources/luna-void-walker]] — Void Walker
+- [[syntheses/2026-06-30-neon-ghosts]] — Neon Ghosts
+- [[syntheses/2026-06-30-packaged]] — PACKAGED
+- [[sources/nova-supernova]] — Supernova

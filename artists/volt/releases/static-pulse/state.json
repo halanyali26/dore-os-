@@ -1,0 +1,31 @@
+{
+  "state": "PACKAGED",
+  "title": "Static Pulse",
+  "genre": "industrial",
+  "created_at": "2026-06-30T08:45:15.200342",
+  "history": [
+    {
+      "from": "IDEA",
+      "to": "PRODUCTION",
+      "agent": "CLI",
+      "timestamp": "2026-06-30T08:45:22.515440"
+    },
+    {
+      "from": "PRODUCTION",
+      "to": "MASTERED",
+      "agent": "CLI",
+      "timestamp": "2026-06-30T08:45:22.515527"
+    },
+    {
+      "from": "MASTERED",
+      "to": "PACKAGED",
+      "agent": "CLI",
+      "timestamp": "2026-06-30T08:45:22.515607"
+    }
+  ],
+  "metadata": {
+    "isrc": "TR-DRS-26-58415",
+    "upc": "276745980071",
+    "genre": "industrial"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "state": "PACKAGED",
+  "title": "Void Walker",
+  "genre": "ambient",
+  "created_at": "2026-06-30T08:45:15.264832",
+  "history": [
+    {
+      "from": "IDEA",
+      "to": "PRODUCTION",
+      "agent": "CLI",
+      "timestamp": "2026-06-30T08:45:22.515815"
+    },
+    {
+      "from": "PRODUCTION",
+      "to": "MASTERED",
+      "agent": "CLI",
+      "timestamp": "2026-06-30T08:45:22.515917"
+    },
+    {
+      "from": "MASTERED",
+      "to": "PACKAGED",
+      "agent": "CLI",
+      "timestamp": "2026-06-30T08:45:22.515996"
+    }
+  ],
+  "metadata": {
+    "isrc": "TR-DRS-26-51038",
+    "upc": "657033979162",
+    "genre": "ambient"
+  }
+}

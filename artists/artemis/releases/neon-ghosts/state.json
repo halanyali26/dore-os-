@@ -1,0 +1,31 @@
+{
+  "state": "PACKAGED",
+  "title": "Neon Ghosts",
+  "genre": "synthwave",
+  "created_at": "2026-06-30T08:45:15.115414",
+  "history": [
+    {
+      "from": "IDEA",
+      "to": "PRODUCTION",
+      "agent": "CLI",
+      "timestamp": "2026-06-30T08:45:22.514698"
+    },
+    {
+      "from": "PRODUCTION",
+      "to": "MASTERED",
+      "agent": "CLI",
+      "timestamp": "2026-06-30T08:45:22.515082"
+    },
+    {
+      "from": "MASTERED",
+      "to": "PACKAGED",
+      "agent": "CLI",
+      "timestamp": "2026-06-30T08:45:22.515193"
+    }
+  ],
+  "metadata": {
+    "isrc": "TR-DRS-26-25043",
+    "upc": "311781048728",
+    "genre": "synthwave"
+  }
+}

@@ -4,7 +4,7 @@ Health checks: Spotify-wiki sync, stale distributions, orphan files, consistency
 """
 import json
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List
 
 
@@ -56,11 +56,48 @@ class GuardianLinter:
     def check_wiki_spotify_sync(self) -> List[Dict]:
         """Find releases on Spotify not in wiki, and wiki entries not on Spotify."""
         issues = []
-        # Load wiki index
         index_path = self.vault_path / "index.md"
         if not index_path.exists():
             return [{"type": "wiki_spotify_sync", "severity": "medium",
                      "message": "index.md not found — wiki not initialized"}]
+
+        # Collect wiki sources
+        sources_path = self.vault_path / "sources"
+        wiki_slugs = set()
+        if sources_path.exists():
+            for src in sources_path.glob("*.md"):
+                wiki_slugs.add(src.stem)
+
+        # Check artists against wiki
+        if self.artists_path.exists():
+            for artist_dir in self.artists_path.iterdir():
+                if not artist_dir.is_dir() or artist_dir.name.startswith("_"):
+                    continue
+                releases_path = artist_dir / "releases"
+                if not releases_path.exists():
+                    continue
+                for rel_dir in releases_path.iterdir():
+                    expected_slug = f"{artist_dir.name}-{rel_dir.name}"
+                    if expected_slug not in wiki_slugs:
+                        issues.append({
+                            "type": "missing_wiki_source",
+                            "severity": "medium",
+                            "message": f"{artist_dir.name}/{rel_dir.name}: no vault/sources/{expected_slug}.md"
+                        })
+
+        # Check wiki entries without artist/release
+        for slug in wiki_slugs:
+            if "-" in slug:
+                parts = slug.split("-", 1)
+                artist_name, release_name = parts[0], parts[1]
+                state_path = self.artists_path / artist_name / "releases" / release_name / "state.json"
+                if not state_path.exists():
+                    issues.append({
+                        "type": "orphan_wiki_source",
+                        "severity": "low",
+                        "message": f"vault/sources/{slug}.md: no matching release directory"
+                    })
+
         return issues
 
     def check_stale_distributions(self, hours: int = 48) -> List[Dict]:
@@ -69,7 +106,7 @@ class GuardianLinter:
         if not self.artists_path.exists():
             return issues
 
-        cutoff = datetime.utcnow() - timedelta(hours=hours)
+        cutoff = datetime.now(tz=timezone.utc) - timedelta(hours=hours)
 
         for artist_dir in self.artists_path.iterdir():
             if not artist_dir.is_dir() or artist_dir.name.startswith("_"):
@@ -156,8 +193,41 @@ class GuardianLinter:
         return issues
 
     def check_cross_references(self) -> List[Dict]:
-        """Check cross-references between wiki pages."""
-        return []  # Placeholder: requires parsing all wiki links
+        """Check wiki page cross-references for dead links."""
+        issues = []
+        wiki_path = self.vault_path
+        if not wiki_path.exists():
+            return issues
+
+        # Build set of all valid wiki page paths (relative to vault)
+        valid_pages = set()
+        for md_file in wiki_path.rglob("*.md"):
+            rel = str(md_file.relative_to(wiki_path))
+            valid_pages.add(rel)
+            valid_pages.add(md_file.stem)  # bare [[page]] links
+
+        # Scan for [[links]] and check
+        import re
+        link_pattern = re.compile(r'\[\[([^\]]+)\]\]')
+        for md_file in wiki_path.rglob("*.md"):
+            try:
+                content = md_file.read_text()
+                for match in link_pattern.finditer(content):
+                    target = match.group(1)
+                    # Strip alias: [[page|alias]]
+                    target = target.split("|")[0].strip()
+                    if target not in valid_pages and not target.startswith("http"):
+                        # Check with extension
+                        if f"{target}.md" not in valid_pages:
+                            issues.append({
+                                "type": "dead_link",
+                                "severity": "low",
+                                "message": f"{md_file.relative_to(wiki_path)} → [[{target}]]: page not found"
+                            })
+            except Exception:
+                pass
+
+        return issues
 
     def check_audio_files(self) -> List[Dict]:
         """Verify audio files exist and are valid formats."""
@@ -184,7 +254,7 @@ class GuardianLinter:
             sev_count[issue["severity"]] += 1
 
         return {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(tz=timezone.utc).isoformat(),
             "total_issues": len(issues),
             "by_severity": sev_count,
             "issues": issues,

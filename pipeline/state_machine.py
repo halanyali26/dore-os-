@@ -5,7 +5,7 @@ Release lifecycle finite state machine with transition validation.
 from enum import Enum
 from typing import Optional, Callable, Dict, List
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class State(str, Enum):
@@ -140,7 +140,7 @@ class StateMachine:
             "description": transition.description,
             "required_files": transition.required_files,
             "auto_actions": transition.auto_actions,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(tz=timezone.utc).isoformat(),
         }
         context.update(result)
 

@@ -4,7 +4,7 @@ LangFuse integration for LLM call tracing and pipeline monitoring.
 """
 import os
 from typing import Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class Observability:
@@ -60,7 +60,7 @@ class Observability:
                 },
                 metadata={
                     "cost": cost,
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(tz=timezone.utc).isoformat(),
                     **(metadata or {})
                 }
             )

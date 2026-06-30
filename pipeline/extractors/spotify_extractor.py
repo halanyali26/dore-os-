@@ -5,7 +5,7 @@ Fetches Spotify data via Spotipy, processes with Hermes LLM.
 import json
 import os
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 
@@ -49,7 +49,7 @@ class SpotifyExtractor:
                 {"name": t["name"], "popularity": t["popularity"], "album": t["album"]["name"]}
                 for t in top_tracks.get("tracks", [])[:5]
             ],
-            "fetched_at": datetime.utcnow().isoformat(),
+            "fetched_at": datetime.now(tz=timezone.utc).isoformat(),
         }
 
         # Save to analytics

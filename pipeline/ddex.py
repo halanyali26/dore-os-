@@ -4,7 +4,7 @@ Generates DDEX Electronic Release Notification (ERN) v4.3 XML
 for enterprise music distribution.
 """
 import xml.etree.ElementTree as ET
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Optional
 
 
@@ -45,7 +45,7 @@ class DDEXGenerator:
         ET.SubElement(header, "MessageId").text = release_data.get("release_reference", f"DORE-{datetime.now():%Y%m%d%H%M%S}")
         ET.SubElement(header, "MessageSender").text = "Dore Studio"
         ET.SubElement(header, "MessageRecipient").text = release_data.get("distributor", "DistroKid")
-        ET.SubElement(header, "MessageCreatedDateTime").text = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        ET.SubElement(header, "MessageCreatedDateTime").text = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         # Release
         release_list = ET.SubElement(root, "ReleaseList")

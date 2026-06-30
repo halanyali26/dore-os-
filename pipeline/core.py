@@ -8,7 +8,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Optional, Dict, Any, Literal
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 from pydantic import BaseModel, Field
@@ -130,7 +130,7 @@ class BaseAgent:
             "from": current_state.value,
             "to": new_state.value,
             "agent": self.name,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(tz=timezone.utc).isoformat(),
         })
         if metadata:
             current.setdefault("metadata", {}).update(metadata)
@@ -212,7 +212,7 @@ class PackagerAgent(BaseAgent):
             "isrc": isrc,
             "state": ReleaseState.PACKAGED.value,
             "metadata": {"description": metadata_response.content},
-            "packaged_at": datetime.utcnow().isoformat(),
+            "packaged_at": datetime.now(tz=timezone.utc).isoformat(),
         }
 
         pkg_path = self.vault_path / "analytics" / f"{artist_id}_{release_slug}_package.json"

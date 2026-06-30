@@ -5,10 +5,8 @@ Obsidian vault integration: state.json read/write, wiki maintenance.
 import json
 import shutil
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict, List
-
-
 class VaultManager:
     """Manages the Obsidian vault structure and state files."""
 
@@ -34,7 +32,7 @@ class VaultManager:
         current["state"] = new_state
         current["history"].append({
             "from": old_state, "to": new_state,
-            "agent": agent, "timestamp": datetime.utcnow().isoformat(),
+            "agent": agent, "timestamp": datetime.now(tz=timezone.utc).isoformat(),
         })
         if metadata:
             current.setdefault("metadata", {}).update(metadata)
@@ -113,7 +111,7 @@ class VaultManager:
 
     def file_back_query(self, question: str, answer: str, sources: list):
         """File a query answer back into syntheses/ as a new wiki page."""
-        from datetime import datetime
+        from datetime import datetime as dt
         slug = question.lower().replace(" ", "-").replace("?", "")[:40]
         ts = datetime.now().strftime("%Y-%m-%d")
         fm = {"title": question, "tags": ["query", "synthesis"], "date": ts, "status": "complete"}
@@ -149,7 +147,7 @@ class VaultManager:
             "state": "IDEA",
             "title": title,
             "genre": genre,
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(tz=timezone.utc).isoformat(),
             "history": [],
             "metadata": {},
         }

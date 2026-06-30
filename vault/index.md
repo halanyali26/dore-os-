@@ -27,3 +27,5 @@
 - [[syntheses/2026-06-30-neon-ghosts]] — Neon Ghosts
 - [[syntheses/2026-06-30-packaged]] — PACKAGED
 - [[sources/nova-supernova]] — Supernova
+- [[syntheses/2026-06-30-neon]] — Neon
+- [[syntheses/2026-06-30-neon]] — Neon

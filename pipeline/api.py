@@ -78,124 +78,199 @@ def get_log(limit: int = 20):
 # ─── Dashboard HTML ────────────────────────────────────────
 @app.get("/", response_class=HTMLResponse)
 def dashboard():
-    return HTMLResponse("""
-<!DOCTYPE html>
+    return HTMLResponse(r"""<!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dore OS v2.0 — Dashboard</title>
+<title>DORE/OS :: TERMINAL</title>
 <style>
-:root {
-  --bg: #0a0a0f; --card: #12121a; --border: #1e1e2e;
-  --text: #cdd6f4; --muted: #6c7086; --accent: #7c3aed;
-  --green: #10b981; --yellow: #f59e0b; --red: #ef4444; --blue: #3b82f6;
+@font-face{font-family:'JetBrains Mono';src:local('JetBrains Mono'),local('Menlo'),local('Consolas'),local('monospace')}
+:root{
+  --bg:#0c0c0c;--panel:#141414;--border:#222;
+  --text:#b0b0b0;--dim:#555;--amber:#d4842a;--amber-glow:#d4842a66;
+  --green:#3a8;--green-glow:#3a8866;--red:#c44;--blue:#557799;--cyan:#3aa;
+  --font:'JetBrains Mono','Menlo','Consolas',monospace;
+  --scanline:rgba(0,0,0,0.03);
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,sans-serif; padding:24px; }
-h1 { font-size:28px; margin-bottom:4px; }
-h1 span { color:var(--accent); }
-.subtitle { color:var(--muted); margin-bottom:24px; font-size:14px; }
-.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:16px; }
-.card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; }
-.card h3 { font-size:16px; margin-bottom:12px; display:flex; justify-content:space-between; }
-.card h3 .count { color:var(--muted); font-weight:400; }
-.release { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); }
-.release:last-child { border-bottom:0; }
-.release .title { font-size:14px; font-weight:500; }
-.release .meta { font-size:11px; color:var(--muted); }
-.state-badge { font-size:10px; padding:2px 8px; border-radius:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
-.state-IDEA { background:#1e1b4b; color:#818cf8; }
-.state-PRODUCTION { background:#172554; color:#60a5fa; }
-.state-MASTERED { background:#1a2e05; color:#a3e635; }
-.state-PACKAGED { background:#2e1065; color:#c084fc; }
-.state-DISTRIBUTED { background:#1e3a5f; color:#38bdf8; }
-.state-LIVE { background:#064e3b; color:#34d399; }
-.state-MONETIZED { background:#4a1d96; color:#fbbf24; }
-.quick-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
-.stat { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px; text-align:center; }
-.stat .value { font-size:28px; font-weight:700; color:var(--accent); }
-.stat .label { font-size:11px; color:var(--muted); margin-top:4px; text-transform:uppercase; }
-.alert-box { margin-top:16px; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; max-height:200px; overflow-y:auto; }
-.alert-box h4 { margin-bottom:8px; font-size:14px; }
-.alert-box pre { font-size:12px; color:var(--muted); white-space:pre-wrap; font-family:inherit; }
-.refresh { color:var(--muted); font-size:11px; text-align:right; margin-top:16px; }
-.isrc { font-family:monospace; font-size:10px; color:var(--muted); }
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font);
+  font-size:12px;
+  line-height:1.6;
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:repeating-linear-gradient(0deg,var(--scanline),var(--scanline) 2px,transparent 2px,transparent 4px);
+  pointer-events:none;z-index:999;opacity:0.3;
+}
+body::after{
+  content:'';
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:radial-gradient(ellipse at center,rgba(0,0,0,0) 60%,rgba(0,0,0,0.4) 100%);
+  pointer-events:none;z-index:998;
+}
+.container{max-width:1100px;margin:0 auto;padding:32px 24px}
+.header{
+  border-bottom:1px solid var(--border);
+  padding-bottom:20px;margin-bottom:28px;
+  display:flex;justify-content:space-between;align-items:flex-end;
+}
+.header h1{
+  font-size:22px;font-weight:400;letter-spacing:4px;
+  color:var(--amber);text-transform:uppercase;
+}
+.header h1 span{color:var(--dim)}
+.status-line{
+  font-size:10px;color:var(--dim);text-align:right;
+  text-transform:uppercase;letter-spacing:2px;
+}
+.status-line .live{color:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-bottom:28px;background:var(--border)}
+.stat{
+  background:var(--panel);padding:18px 14px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.stat .value{font-size:36px;font-weight:300;color:var(--amber);letter-spacing:2px;font-family:var(--font)}
+.stat .label{font-size:9px;text-transform:uppercase;letter-spacing:3px;color:var(--dim);margin-top:4px}
+.stat::after{
+  content:'';
+  position:absolute;bottom:0;left:0;width:100%;height:2px;
+  background:var(--amber);opacity:0;transition:opacity 0.3s;
+}
+.stat:hover::after{opacity:1}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1px;background:var(--border);margin-bottom:28px}
+.card{background:var(--panel);padding:20px}
+.card-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px;padding-bottom:10px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.card-header h3{font-size:11px;text-transform:uppercase;letter-spacing:3px;font-weight:400;color:var(--text)}
+.card-header .count{font-size:9px;color:var(--dim);letter-spacing:2px}
+.release{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03);
+  transition:background 0.15s;
+}
+.release:last-child{border-bottom:0}
+.release:hover{background:rgba(255,255,255,0.02)}
+.release .info .title{font-size:12px;color:var(--text);margin-bottom:1px}
+.release .info .meta{font-size:9px;color:var(--dim);letter-spacing:1px}
+.release .info .meta .isrc{color:var(--amber);font-family:var(--font)}
+
+.state-badge{
+  font-size:8px;padding:3px 8px;letter-spacing:2px;
+  text-transform:uppercase;font-weight:500;
+  border:1px solid var(--border);
+}
+.state-IDEA{border-color:var(--dim);color:var(--dim)}
+.state-PRODUCTION{border-color:var(--blue);color:var(--blue)}
+.state-MASTERED{border-color:var(--cyan);color:var(--cyan)}
+.state-PACKAGED{border-color:var(--amber);color:var(--amber)}
+.state-DISTRIBUTED{border-color:var(--green);color:var(--green)}
+.state-LIVE{background:rgba(58,136,102,0.08);border-color:var(--green);color:var(--green)}
+.state-MONETIZED{border-color:var(--amber);color:var(--amber);text-shadow:0 0 8px var(--amber-glow)}
+
+/* Alerts */
+.alerts{
+  background:var(--panel);border:1px solid var(--border);
+  padding:20px;margin-bottom:28px;
+}
+.alerts h4{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);margin-bottom:10px}
+.alerts pre{font-family:var(--font);font-size:10px;color:var(--text);line-height:1.8;white-space:pre-wrap;max-height:180px;overflow-y:auto}
+
+/* Footer */
+.footer{
+  text-align:right;font-size:9px;color:var(--dim);
+  letter-spacing:1px;text-transform:uppercase;
+  border-top:1px solid var(--border);padding-top:14px;
+}
+.footer .blink{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{visibility:hidden}}
 </style>
 </head>
 <body>
-<h1>Dore <span>OS</span> v2.0</h1>
-<p class="subtitle">AI Music Label Pipeline — Brain Dashboard</p>
+<div class="container">
 
-<div class="quick-stats" id="stats"></div>
-
-<div class="grid" id="artists"></div>
-
-<div class="alert-box" id="alerts">
-  <h4>🔍 Guardian Alerts</h4>
-  <pre id="alert-content">Loading...</pre>
+<div class="header">
+  <h1>DORE<span>/</span>OS <span style="font-size:10px;letter-spacing:2px;display:block;margin-top:2px">AI MUSIC LABEL :: PIPELINE CONTROL</span></h1>
+  <div class="status-line">
+    <span class="live">●</span> SYSTEM ONLINE<br>
+    <span id="clock"></span>
+  </div>
 </div>
 
-<p class="refresh">Auto-refresh every 10s · <span id="clock"></span></p>
+<div class="stats" id="stats"></div>
+<div class="grid" id="artists"></div>
+
+<div class="alerts">
+  <h4>▸ GUARDIAN : ALERTS</h4>
+  <pre id="alert-content">initializing...</pre>
+</div>
+
+<div class="footer">
+  DORE/OS v2.0 &nbsp;|&nbsp; REFRESH 10s &nbsp;|&nbsp; <span id="clock2"></span><span class="blink">_</span>
+</div>
+
+</div>
 
 <script>
-const S = {
-  IDEA:'#818cf8', PRODUCTION:'#60a5fa', MASTERED:'#a3e635',
-  PACKAGED:'#c084fc', DISTRIBUTED:'#38bdf8', LIVE:'#34d399', MONETIZED:'#fbbf24'
-};
+const S={IDEA:'var(--dim)',PRODUCTION:'var(--blue)',MASTERED:'var(--cyan)',PACKAGED:'var(--amber)',DISTRIBUTED:'var(--green)',LIVE:'var(--green)',MONETIZED:'var(--amber)'};
 
-async function load() {
-  try {
-    const [artists, alerts, log] = await Promise.all([
+async function load(){
+  try{
+    const[A,L]=await Promise.all([
       fetch('/api/artists').then(r=>r.json()),
-      fetch('/api/lint').then(r=>r.json()),
-      fetch('/api/log?limit=5').then(r=>r.json())
+      fetch('/api/lint').then(r=>r.json())
     ]);
 
-    let totalReleases = 0, stateCount = {};
-    artists.forEach(a => {
-      totalReleases += a.total;
-      a.releases.forEach(r => {
-        stateCount[r.state] = (stateCount[r.state]||0) + 1;
-      });
-    });
+    let tr=0,sc={};
+    A.forEach(a=>{tr+=a.total;a.releases.forEach(r=>{sc[r.state]=(sc[r.state]||0)+1})});
 
-    document.getElementById('stats').innerHTML = `
-      <div class="stat"><div class="value">${artists.length}</div><div class="label">Artists</div></div>
-      <div class="stat"><div class="value">${totalReleases}</div><div class="label">Releases</div></div>
-      <div class="stat"><div class="value">${stateCount.PACKAGED||0}</div><div class="label">Packaged</div></div>
-      <div class="stat"><div class="value">${stateCount.LIVE||0}</div><div class="label">Live</div></div>
-    `;
+    document.getElementById('stats').innerHTML=`
+      <div class="stat"><div class="value">${String(A.length).padStart(2,'0')}</div><div class="label">ARTISTS</div></div>
+      <div class="stat"><div class="value">${String(tr).padStart(2,'0')}</div><div class="label">RELEASES</div></div>
+      <div class="stat"><div class="value">${String(sc.PACKAGED||0).padStart(2,'0')}</div><div class="label">PACKAGED</div></div>
+      <div class="stat"><div class="value">${String(sc.LIVE||0).padStart(2,'0')}</div><div class="label">LIVE</div></div>`;
 
-    let html = '';
-    artists.forEach(a => {
-      html += `<div class="card">
-        <h3>${a.name} <span class="count">${a.total} release</span></h3>`;
-      if (a.releases.length === 0) {
-        html += '<p style="color:var(--muted);font-size:13px;">No releases yet</p>';
-      }
-      a.releases.forEach(r => {
-        html += `<div class="release">
-          <div>
-            <div class="title">${r.title || r.slug}</div>
-            <div class="meta">${r.genre||''} ${r.isrc ? '· <span class=isrc>'+r.isrc+'</span>' : ''}</div>
+    let h='';
+    A.forEach(a=>{
+      h+=`<div class="card">
+        <div class="card-header"><h3>▸ ${a.name}</h3><span class="count">${a.total} RELEASE</span></div>`;
+      a.releases.forEach(r=>{
+        h+=`<div class="release">
+          <div class="info">
+            <div class="title">${r.title||r.slug}</div>
+            <div class="meta">${r.genre} ${r.isrc?'<span class="isrc">'+r.isrc+'</span>':''}</div>
           </div>
           <span class="state-badge state-${r.state}">${r.state}</span>
         </div>`;
       });
-      html += '</div>';
+      h+='</div>';
     });
-    document.getElementById('artists').innerHTML = html;
+    document.getElementById('artists').innerHTML=h;
 
-    document.getElementById('alert-content').textContent = alerts.content || 'No alerts';
-    document.getElementById('clock').textContent = new Date().toLocaleTimeString('tr-TR');
-  } catch(e) {
-    console.error(e);
-  }
+    document.getElementById('alert-content').textContent=L.content||'NO ALERTS';
+
+    const t=new Date().toLocaleTimeString('tr-TR',{hour12:false});
+    document.getElementById('clock').textContent=t;
+    document.getElementById('clock2').textContent=t;
+  }catch(e){console.error(e)}
 }
-
 load();
-setInterval(load, 10000);
+setInterval(load,10000);
 </script>
 </body>
 </html>

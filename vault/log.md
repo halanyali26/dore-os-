@@ -21,3 +21,7 @@
 
 ## [2026-06-30 12:07] bootstrap | New release: nova/supernova
 
+## [2026-06-30 12:08] query | Filed-back: "Neon" → syntheses/2026-06-30-neon.md
+
+## [2026-06-30 12:08] query | Filed-back: "Neon" → syntheses/2026-06-30-neon.md
+
